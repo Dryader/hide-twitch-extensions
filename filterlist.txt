@@ -1,0 +1,59 @@
+[Adblock Plus 2.0]
+! Title: Hide Twitch Extensions
+! Description: Turns Twitch channel extensions off for viewers (overlay, component and panel). Extensions only - no ads, no channel points, no chat, nothing else on Twitch is touched.
+! Version: 2026.08.30.1
+! Expires: 7 days
+! Homepage: https://github.com/Dryader/hide-twitch-extensions
+! License: https://github.com/Dryader/hide-twitch-extensions/blob/main/LICENSE
+!
+! Twitch gives viewers no switch for this: player extensions can be
+! minimised, not disabled. A content blocker is the only viewer-side option.
+!
+! ============================================================
+! 1. NETWORK RULE - the durable part of this list
+! ============================================================
+! Every Twitch extension renders inside an iframe served from
+! <extension-id>.ext-twitch.tv, orchestrated by the parent frame at
+! supervisor.ext-twitch.tv/supervisor/v1/index.html.
+!
+! Blocking that subdocument means extensions never load, rather than
+! loading and being painted over. It matches on hostname, so Twitch
+! front-end rewrites and hashed CSS class names cannot break it.
+!
+! Verified 2026-08-30: supervisor.ext-twitch.tv/supervisor/v1/index.html
+! still returns HTTP 200 text/html.
+||ext-twitch.tv^$subdocument
+!
+! ============================================================
+! 2. COSMETIC CLEANUP - removes the leftover containers
+! ============================================================
+! With the frames blocked, Twitch still renders the wrappers: the
+! extensions dock, the taskbar strip of extension buttons, and the
+! overlay sizing box. Left in place they reserve empty space, and the
+! overlay box is a known cause of the player controls becoming
+! unclickable and the mouse cursor refusing to auto-hide over the video.
+twitch.tv##[class*="extensions-dock"]
+twitch.tv##.extensions-video-overlay-size-container
+twitch.tv##.extension-taskbar
+twitch.tv##.extension-taskbar-card-container
+twitch.tv##.extension-view
+twitch.tv##.extension-frame-wrapper
+twitch.tv##.extensions-notifications
+!
+! ============================================================
+! 3. OPTIONAL - panel extensions below the video
+! ============================================================
+! Rule 1 already stops panel extensions loading. Uncomment the line
+! below only if a blocked panel extension leaves a visible gap under
+! the stream. Procedural (:has) syntax, uBlock Origin / AdGuard only.
+! twitch.tv#?#.channel-panels-container > div:has(a[href^="/ext/"])
+!
+! ============================================================
+! NOT in this list, on purpose
+! ============================================================
+! - Ads. This is not an ad blocker.
+! - Channel points, bits, share button, Prime offers, the front page
+!   carousel, the GDPR banner. The one other filter list that hides
+!   extensions (ultramegatom/adblock-twitch-garbage, last touched
+!   2018) also strips all of those. This list does not.
+! - Chat, badges, emotes, the leaderboard header in chat.
